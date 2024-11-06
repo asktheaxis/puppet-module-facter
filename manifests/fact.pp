@@ -20,7 +20,6 @@ define facter::fact (
   Optional[String[1]] $file = undef,
   Optional[Stdlib::Absolutepath] $facts_dir = undef,
 ) {
-
   include facter
 
   $facts_file = pick($file, $facter::facts_file)
@@ -34,20 +33,18 @@ define facter::fact (
   $match = "^${name}=\\S.*$"
 
   if $facts_file != $facter::facts_file {
-    $concat_target = "facts_file_${name}"
-    concat { "facts_file_${name}":
-      ensure => 'present',
+    file { "facts_file_${name}":
+      ensure => file,
       path   => $facts_file_path,
       owner  => $facter::facts_file_owner,
       group  => $facter::facts_file_group,
       mode   => $facter::facts_file_mode,
     }
-  } else {
-    $concat_target = 'facts_file'
   }
 
-  concat::fragment { "fact_line_${name}":
-    target  => $concat_target,
-    content => "${name}=${value}",
+  file_line { "fact_line_${name}":
+    path  => $facts_file_path,
+    line  => "${name}=${value}",
+    match => $match,
   }
 }
